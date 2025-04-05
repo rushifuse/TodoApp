@@ -1,25 +1,25 @@
 # Use OpenJDK 17 base image
 FROM openjdk:17-jdk-slim
 
-# Set working directory
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy Maven wrapper files first (for caching)
-COPY mvnw .
-COPY .mvn .mvn
-
-# Copy pom.xml and download dependencies
+# Copy Maven wrapper and related files first (cache layer optimization)
+COPY mvnw ./
+COPY .mvn/ .mvn
 COPY pom.xml .
+
+# Download dependencies (offline mode)
 RUN chmod +x mvnw && ./mvnw dependency:go-offline
 
-# Copy the rest of the source code
-COPY src src
+# Copy source code
+COPY src ./src
 
-# Build the app (output will be target/app.jar)
+# Build the application (skip tests for faster build)
 RUN ./mvnw clean package -DskipTests
 
-# Expose the port (matches application.properties)
+# Expose port (you can change this if using a different port)
 EXPOSE 8080
 
-# Run the app
+# Run the app (matches JAR name created by <finalName>app</finalName>)
 CMD ["java", "-jar", "target/app.jar"]
