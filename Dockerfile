@@ -1,10 +1,10 @@
-# Use OpenJDK 17 slim image
+# Use OpenJDK 17 base image
 FROM openjdk:17-jdk-slim
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and related files (for cache optimization)
+# Copy Maven wrapper files first (for caching)
 COPY mvnw .
 COPY .mvn .mvn
 
@@ -12,14 +12,14 @@ COPY .mvn .mvn
 COPY pom.xml .
 RUN chmod +x mvnw && ./mvnw dependency:go-offline
 
-# Copy the full source code
+# Copy the rest of the source code
 COPY src src
 
-# Build the Spring Boot app
+# Build the app (output will be target/app.jar)
 RUN ./mvnw clean package -DskipTests
 
-# Expose the port your app runs on (match application.properties)
+# Expose the port (matches application.properties)
 EXPOSE 8080
 
 # Run the app
-CMD ["java", "-jar", "target/TodoApp-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/app.jar"]
